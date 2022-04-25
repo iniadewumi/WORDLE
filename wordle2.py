@@ -1,4 +1,5 @@
 #CRANE
+import itertools
 from selenium import webdriver
 import pyautogui as pag
 import json, pathlib
@@ -14,27 +15,29 @@ chromeOptions.add_argument('--no-sandbox')
 chromeOptions.add_argument('--disable-dev-shm-usage')
 
 
+class ChromeNotFoundException(Exception):
+    pass
 
 try:
     # PYTHON Example
     winds = next(x for x in pag.getAllTitles() if "google chrome" in x.lower() and "wordle" in x.lower())
 
     if not winds:
-        raise Exception("Chrome not found!")
+        raise ChromeNotFoundException("Chrome not found!")
     print("Trying to access old Chrome Browser at Port: 9222")
 
     from selenium.webdriver.chrome.options import Options
     chrome_options = Options()
-    chrome_options.add_argument(f"user-data-dir={USER_DATA}") 
+    chrome_options.add_argument(f"user-data-dir={USER_DATA}")
     chrome_options.add_argument('log-level=3')
     chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
     browser = webdriver.Chrome(options=chrome_options)
     print("Successfully accessed old Chrome Browser at Port: 9222")
 
-except:
+except Exception:
     print("Failed to access old Chrome Browser at Port: 9222\nCreating new Chrome Browser")
     chrome_options1 = webdriver.ChromeOptions()
-    chrome_options1.add_argument(f"user-data-dir={USER_DATA}") 
+    chrome_options1.add_argument(f"user-data-dir={USER_DATA}")
     chrome_options1.add_argument('--remote-debugging-port=9222')
     chrome_options1.add_argument('log-level=3')
     browser = webdriver.Chrome(options=chrome_options1)
@@ -80,19 +83,7 @@ class Wordle:
             self.not_in = list(set(self.not_in + [x for x in letters if x not in list(self.correct.keys())+self.present]))
 
 
-        self.potential = set()
-        for word in to_check:
-            if (
-                {i: v for i, v in self.correct.items() if word[v] == i}
-                == self.correct
-                and not any(x for x in self.not_in if x in word)
-                and sorted([x for x in self.present if x in word])
-                == sorted(self.present)
-                and not [
-                    let for let, j in self.wrong_pos.items() if word[j] == let
-                ]
-            ):
-                self.potential.add(word)
+        self.potential = {word for word in to_check if ({i: v for i, v in self.correct.items() if word[v] == i} == self.correct and not any(x for x in self.not_in if x in word) and sorted([x for x in self.present if x in word]) == sorted(self.present) and not [let for let, j in self.wrong_pos.items() if word[j] == let])}
 
         self.get_letter_freq()
     def get_letter_freq(self):
@@ -107,10 +98,9 @@ class Wordle:
 
 
         self.ranked_pot = {}
-        for word in check_list:
-            for i, v in self.letter_freq.items():
-                if i in word:
-                    self.ranked_pot[word] = self.ranked_pot.get(word, 0) + v
+        for word, (i, v) in itertools.product(check_list, self.letter_freq.items()):
+            if i in word:
+                self.ranked_pot[word] = self.ranked_pot.get(word, 0) + v
         self.ranked_pot = dict(sorted(self.ranked_pot.items(), key=lambda x: x[1], reverse=True))
         print(list(self.ranked_pot)[:50])
         print(self.letter_freq)
