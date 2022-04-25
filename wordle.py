@@ -4,13 +4,8 @@ from selenium import webdriver
 import pyautogui as pag
 import json, pathlib
 
-USER_DATA = pathlib.Path().resolve() / 'Rick'
-
-if not USER_DATA.exists():
-    USER_DATA.mkdir()
-
-
-
+USER_DATA = pathlib.Path().resolve() / 'Data'
+USER_DATA.mkdir(exist_ok=True, parents=True)
 
 class ChromeNotFoundException(Exception):
     pass
