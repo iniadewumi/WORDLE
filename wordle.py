@@ -2,12 +2,12 @@
 import itertools
 from selenium import webdriver
 import json, pathlib
-from time import sleep
+# from time import sleep
 # import pyautogui as pag
 
 HOME = pathlib.Path().resolve() 
 cdr = HOME.parent
-USER_DATA = HOME / 'Data'
+USER_DATA = HOME / 'Ricki'
 USER_DATA.mkdir(exist_ok=True, parents=True)
 
 class ChromeNotFoundException(Exception):
@@ -17,6 +17,7 @@ class Wordle:
     def __init__(self):
         self.url = "https://www.powerlanguage.co.uk/wordle/"
         self.potential = set()
+        self.present = []
         self.correct = {}
         with open("all_words.json", "r") as f:
             self.words = json.load(f) 
@@ -29,8 +30,8 @@ class Wordle:
             if len(self.correct.keys())>=4 and len(self.potential)<2:
                 print(f"Word found: {self.potential.pop()}")
                 break
-            # input("\nPress Enter after playing: ")
-            sleep(10)
+            input("\nPress Enter after playing: ")
+            # sleep(10)
             board = browser.execute_script("return document.getElementsByTagName('game-app')[0].$board")
             
             self.correct  = {}
